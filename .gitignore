@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Database (never commit!)
+db.sqlite3
+db.sqlite3-journal
+
+# Environment / secrets
+.env
+
+# Test coverage
+.coverage
+htmlcov/
+
+# Collected static files
+staticfiles/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
