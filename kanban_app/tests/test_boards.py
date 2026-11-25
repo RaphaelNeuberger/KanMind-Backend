@@ -32,14 +32,26 @@ class BoardListCreateTests(KanbanTestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.data, [])
 
-    def test_create_board_adds_owner_as_member(self):
+    def test_create_board_sets_owner_and_given_members(self):
         self.login(self.outsider)
         data = {"title": "New", "members": [self.member.id]}
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["owner_id"], self.outsider.id)
-        self.assertEqual(response.data["member_count"], 2)
+        self.assertEqual(response.data["member_count"], 1)
         self.assertNotIn("members", response.data)
+
+    def test_owner_can_add_himself_as_member(self):
+        self.login(self.outsider)
+        data = {"title": "New", "members": [self.outsider.id, self.member.id]}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.data["member_count"], 2)
+
+    def test_owner_sees_own_board_without_membership(self):
+        self.login(self.outsider)
+        self.client.post(self.url, {"title": "Solo"}, format="json")
+        response = self.client.get(self.url)
+        self.assertEqual([b["title"] for b in response.data], ["Solo"])
 
     def test_create_board_with_invalid_member_fails(self):
         self.login(self.owner)
@@ -93,7 +105,7 @@ class BoardDetailTests(KanbanTestCase):
         self.assertEqual(response.data["title"], "Changed")
         self.assertEqual(response.data["owner_data"]["id"], self.owner.id)
         member_ids = {m["id"] for m in response.data["members_data"]}
-        self.assertEqual(member_ids, {self.owner.id, self.outsider.id})
+        self.assertEqual(member_ids, {self.outsider.id})
 
     def test_update_title_only_keeps_members(self):
         self.login(self.owner)

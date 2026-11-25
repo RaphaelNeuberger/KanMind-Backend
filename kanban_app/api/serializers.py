@@ -120,10 +120,10 @@ class BoardListSerializer(serializers.ModelSerializer):
         return obj.tasks.filter(priority=Task.Priority.HIGH).count()
 
     def create(self, validated_data):
-        """Create the board; the owner is always added as a member."""
-        members = set(validated_data.pop("members", []))
+        """Create the board with exactly the given members."""
+        members = validated_data.pop("members", [])
         board = Board.objects.create(**validated_data)
-        board.members.set(members | {board.owner})
+        board.members.set(members)
         return board
 
 
@@ -154,11 +154,11 @@ class BoardUpdateSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "members", "owner_data", "members_data"]
 
     def update(self, instance, validated_data):
-        """Replace the member list; the owner always stays a member."""
+        """Replace the complete member list if one is sent."""
         members = validated_data.pop("members", None)
         instance = super().update(instance, validated_data)
         if members is not None:
-            instance.members.set(set(members) | {instance.owner})
+            instance.members.set(members)
         return instance
 
 

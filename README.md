@@ -63,7 +63,7 @@ All settings have safe defaults for local development. For any other
 environment set these environment variables:
 
 | Variable | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `DJANGO_SECRET_KEY` | insecure development key | **Must** be set in production |
 | `DJANGO_DEBUG` | `True` | Set to `False` in production |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Comma-separated host names |
@@ -71,7 +71,7 @@ environment set these environment variables:
 
 ## Project structure
 
-```
+```text
 core/          Project settings and central URL routing
 auth_app/      Registration, login, email check, guest user command
   api/         serializers.py, views.py, urls.py
@@ -84,7 +84,7 @@ kanban_app/    Boards, tasks and comments (models, admin)
 Token authentication is used. Registration and login return a token that
 must be sent with every other request:
 
-```
+```text
 Authorization: Token <your-token>
 ```
 
@@ -93,7 +93,7 @@ Only `POST /api/registration/` and `POST /api/login/` are open endpoints.
 ## API endpoints
 
 | Method | Endpoint | Description | Permission |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | POST | `/api/registration/` | Create a user, returns token | open |
 | POST | `/api/login/` | Log in with email + password, returns token | open |
 | GET | `/api/email-check/?email=` | Find a user by email | authenticated |
@@ -122,8 +122,12 @@ Status codes follow the specification: `201` created, `204` deleted,
   is split into `first_name` and `last_name` (at the first space).
 - **Login by email:** users log in with email and password, the email is
   case-insensitive.
-- **Board owner is always a member:** on creation and on every member update
-  the owner is kept in the member list, so the owner can be assigned to tasks.
+- **Owner vs. members:** the creator of a board becomes its owner. As in the
+  specification, the owner is only listed as a member if they add themselves
+  to `members`. The owner always has full access to the board and can be
+  assigned as assignee or reviewer even without being listed as a member.
+- **Member updates:** `PATCH /api/boards/{id}/` replaces the complete member
+  list with the sent ids.
 - **Task values:** `status` is one of `to-do`, `in-progress`, `review`,
   `done`; `priority` is one of `low`, `medium`, `high`.
 - **Assignee and reviewer** are passed as `assignee_id` / `reviewer_id`,
@@ -138,7 +142,7 @@ Status codes follow the specification: `201` created, `204` deleted,
 
 ## Tests
 
-The project contains 65 API tests with 100 % coverage.
+The project contains 67 API tests with 100 % coverage.
 
 ```bash
 python manage.py test
